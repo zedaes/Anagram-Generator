@@ -7,9 +7,12 @@
 #define MAX_WORD_LEN 20
 #define MAX_OUTPUT_LEN 80
 #define DICTIONARY_SIZE 100000
+#define MAX_UNIQUE_ANAGRAMS 100000
 
 char dictionary[DICTIONARY_SIZE][MAX_WORD_LEN];
 int dictionary_word_count = 0;
+char unique_anagrams[MAX_UNIQUE_ANAGRAMS][MAX_OUTPUT_LEN];
+int unique_anagram_count = 0;
 
 void swap(char* a, char* b) {
     char temp = *a;
@@ -35,23 +38,39 @@ bool are_all_words_valid(char result[MAX_WORDS][MAX_WORD_LEN], int n) {
     return true;
 }
 
+bool is_anagram_unique(const char* anagram) {
+    for (int i = 0; i < unique_anagram_count; i++) {
+        if (strcmp(unique_anagrams[i], anagram) == 0) {
+            return false;
+        }
+    }
+    return true;
+}
+
+void add_unique_anagram(const char* anagram) {
+    strcpy(unique_anagrams[unique_anagram_count++], anagram);
+}
+
 void generateAnagrams(char* str, int start, int len, int n, char result[MAX_WORDS][MAX_WORD_LEN], int word_lengths[]) {
     if (start == len) {
         int word_start = 0;
+        char anagram[MAX_OUTPUT_LEN] = {0};
 
         // Split the permuted string into words according to original word lengths
         for (int i = 0; i < n; i++) {
             strncpy(result[i], &str[word_start], word_lengths[i]);
             result[i][word_lengths[i]] = '\0';
             word_start += word_lengths[i];
+            strcat(anagram, result[i]);
+            if (i < n - 1) {
+                strcat(anagram, " ");
+            }
         }
 
-        // Check if all words are valid English words
-        if (are_all_words_valid(result, n)) {
-            for (int i = 0; i < n; i++) {
-                printf("%s ", result[i]);
-            }
-            printf("\n");
+        // Check if all words are valid English words and if the anagram is unique
+        if (are_all_words_valid(result, n) && is_anagram_unique(anagram)) {
+            add_unique_anagram(anagram);
+            printf("%s\n", anagram);
         }
 
         return;
@@ -104,7 +123,7 @@ int main() {
         total_length += word_lengths[i];
     }
 
-    printf("Generated anagrams (valid English words only):\n");
+    printf("Generated anagrams (valid English words only, no duplicates):\n");
     generateAnagrams(combined, 0, total_length, n, result, word_lengths);
 
     return 0;
